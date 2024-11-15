@@ -24,4 +24,22 @@ void printTab(FILE * outputFile, size_t depthOfTree);
 
 void printNode(FILE * outputFile, Node * firstNode);
 
+void printMainMenu();
+
+void runGuessMode(Tree * tree);
+
+void printUnknownError();
+
+void printInputError();
+
+void runDefMode();
+
+void runCompareMode();
+
+void startGame();
+
+void skipInput();
+
+void showLog(Tree * tree);
+
 #endif // DATA_H

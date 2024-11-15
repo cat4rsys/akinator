@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -10,7 +11,6 @@ static void _printNode(FILE * outputFile, Node * nodeForPrint, size_t depthOfTre
 Node * _readFromFile(FILE * inputFile)
 {
     int c = 0;
-    //printf("huy\n");
     while ( (c = fgetc(inputFile)) != '{');
     Node * node = (Node *)calloc(1, sizeof(Node));
     _readDataToNode(inputFile, node);
@@ -76,7 +76,7 @@ Node * askQuestions(Node * actualNode)
 
 void winScript()
 {
-    printf("I won! Do you want to continue the game?\n");
+    printf("I won! I know all!\n");
 }
 
 void defeatScript(Tree * tree, Node * node)
@@ -100,7 +100,7 @@ void defeatScript(Tree * tree, Node * node)
     char * dif = readDifference();
     node->data = dif;
 
-    printf("Okay, now I know more than before, thank you! Do you want to continue the game?");
+    printf("Okay, now I know more than before, thank you!\n");
 }
 
 char * readDifference() 
@@ -149,3 +149,124 @@ void printNode(FILE * outputFile, Node * firstNode)
 {
     _printNode(outputFile, firstNode, 0);
 }
+
+void startGame() {
+    bool run = 1;
+    int c = 0;
+
+    Tree * tree = readFromFile(fopen("data.txt", "r"), "log/logfile.htm");
+
+    if ( !tree ) return printUnknownError();
+
+    while (run) {
+        printMainMenu();
+        c = fgetc(stdin);
+
+        switch (c) {
+            case 'g': {
+                runGuessMode(tree);
+                skipInput();
+                break;
+            }
+            case 'd': {
+                runDefMode();
+                break;
+            }
+            case 'c': {
+                runCompareMode();
+                break;
+            }
+            case 'l': {
+                showLog(tree);
+                skipInput();
+                break;
+            }
+            case 's': {
+                FILE * dataFile = fopen("data.txt", "w");
+                printNode(dataFile, tree->firstNode);
+
+                run = 0;
+
+                break;
+            }
+            case 'e': {
+                run = 0;
+
+                break;
+            }
+            default: {
+                printInputError();
+                break;
+            }
+        }
+    }
+}
+
+void printMainMenu() 
+{
+    printf("Hello to Akinator! I can guess your character! What do you want?\n");
+    printf("\t[g] - guess mode\n");
+    printf("\t[d] - definition mode\n");
+    printf("\t[c] - compare mode\n");
+    printf("\t[l] - show picture of tree\n");
+    printf("\t[s] - save and exit\n");
+    printf("\t[e] - exit without saving\n");
+}
+
+void printInputError()
+{
+    printf("I can`t understand you! Choose wisely!");
+}
+
+void printUnknownError()
+{
+    printf("Akinator is not available now! Please, make an issue on my github\n");
+}
+
+void runGuessMode(Tree * tree)
+{
+    Node * lastNode = askQuestions(tree->firstNode);
+
+    int answer = 0;
+    scanf("%d", &answer);
+
+    if (answer == 1) winScript();
+    else             defeatScript(tree, lastNode);
+}
+
+void runDefMode()
+{
+    printf("Not available\n");
+}
+
+void runCompareMode()
+{
+    printf("Not available\n");
+}
+
+void skipInput()
+{
+    int c = 0;
+    while ( (c = fgetc(stdin)) != '\n');
+}
+
+void showLog(Tree * tree)
+{
+    char dotFile[sizeOfBuf] = {};
+    char pngFile[sizeOfBuf] = {};
+
+    snprintf(dotFile, sizeOfBuf, "log/req.dot");
+    snprintf(pngFile, sizeOfBuf, "log/req.png");
+
+    dump(tree, dotFile);
+
+    char cmd[sizeOfBuf] = "dot -Tpng -o ";
+    strcat(cmd, pngFile);
+    strcat(cmd, " ");
+    strcat(cmd, dotFile);
+
+    system(cmd);
+
+    system("xdg-open log/req.png");
+}
+
