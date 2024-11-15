@@ -1,12 +1,61 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "log.h"
 #include "tree.h"
 #include "data.h"
 
 static void _printNode(FILE * outputFile, Node * nodeForPrint, size_t depthOfTree);
 
-//Tree * readFromData(FILE * inputFile, )
+Node * _readFromFile(FILE * inputFile)
+{
+    int c = 0;
+    //printf("huy\n");
+    while ( (c = fgetc(inputFile)) != '{');
+    Node * node = (Node *)calloc(1, sizeof(Node));
+    _readDataToNode(inputFile, node);
+
+    int skipInput = 1;
+    while (skipInput) {
+        c = fgetc(inputFile);
+        if (c == '{' || c == '}') skipInput = 0;
+    }
+
+    if (c == '}') return node;
+
+    ungetc(c, inputFile);
+    node->left  = _readFromFile(inputFile);
+    node->right = _readFromFile(inputFile);
+
+    return node;
+}
+
+void _readDataToNode(FILE * inputFile, Node * node)
+{
+    int c = 0;
+
+    while ( (c = fgetc(inputFile)) != '"');
+    node->data = (char *)calloc(sizeOfBuf, sizeof(char));
+
+    printf("%p\n", node->data);
+    fscanf(inputFile, "%[^\"]", node->data);
+}
+
+Tree * readFromFile(FILE * inputFile, const char * pathToLog)
+{
+    Tree * tree = (Tree *)calloc(1, sizeof(Tree));
+
+    DO_CREATE_TREE(tree, pathToLog);
+
+    tree->firstNode = _readFromFile(inputFile);
+
+    fclose(inputFile);
+
+    return tree;
+}
+
+// [s] - save and exit, [e] - exit, [c] - compare, [l] - dump, []
+
 Node * askQuestions(Node * actualNode)
 {
     if (actualNode == NULL) return NULL;
@@ -39,22 +88,22 @@ void defeatScript(Tree * tree, Node * node)
     fgets(buf, sizeof(buf), stdin);
 
     size_t lenghtOfBuf = strlen(buf);
-    const char * rightAnswer = strndup(buf, lenghtOfBuf-1);
+    char * rightAnswer = strndup(buf, lenghtOfBuf-1);
 
-    const char * wrongAnswer = node->data;
+    char * wrongAnswer = node->data;
 
     DO_CREATE_NODE(tree, wrongAnswer, node, 0);
     DO_CREATE_NODE(tree, rightAnswer, node, 1);
 
     printf("And what is difference between %s and %s?\n", rightAnswer, wrongAnswer);
 
-    const char * dif = readDifference();
+    char * dif = readDifference();
     node->data = dif;
 
     printf("Okay, now I know more than before, thank you! Do you want to continue the game?");
 }
 
-const char * readDifference() 
+char * readDifference() 
 {
     char buf[sizeOfBuf] = {};
     fgets(buf, sizeof(buf), stdin);

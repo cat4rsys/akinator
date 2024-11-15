@@ -6,11 +6,17 @@
 
 Node * askQuestions(Node * actualNode);
 
+void _readDataToNode(FILE * inputFile, Node * node);
+
+Tree * readFromFile(FILE * inputFile, const char * pathToLog);
+
+Node * _readFromFile(FILE * inputFile);
+
 void winScript();
 
 void defeatScript(Tree * tree, Node * node);
 
-const char * readDifference();
+char * readDifference();
 
 int writeUsageError();
 

@@ -4,7 +4,7 @@
 #include <string.h>
 #include "log.h"
 
-TreeError createTree(Tree * newTree, const char * pathToLog, treeElem_t rootElem, const char * file, int line)
+TreeError createTree(Tree * newTree, const char * pathToLog, const char * file, int line)
 {
     if (!newTree) return NULL_PTR;
 
@@ -18,14 +18,6 @@ TreeError createTree(Tree * newTree, const char * pathToLog, treeElem_t rootElem
 
     fprintf(newTree->logFile, "<pre><span style=\"font-size: 16px\">\n\n");
 
-    Node * newNode = (Node *)calloc(1, sizeof(Node));
-    if (!newNode) return NULL_CALLOC;
-
-    newNode->data  = strdup(rootElem);
-    if (!newNode->data) return NULL_CALLOC;
-
-    newTree->firstNode = newNode;
-
     DO_LOG_DUMP(line, file, newTree)
     
     return NORMAL;
@@ -33,14 +25,21 @@ TreeError createTree(Tree * newTree, const char * pathToLog, treeElem_t rootElem
 
 TreeError createNode(Tree * tree, treeElem_t newElement, Node * parentElement, bool answer, const char * file, const int line)
 {
-    Node * newNode = (Node *)calloc(1, sizeof(Node));
-    if (!newNode) return NULL_CALLOC;
+    if ( !tree ) return NULL_PTR;
+    
+    Node * newNode = tree->firstNode;
+    if ( tree->firstNode ) {
+        newNode = (Node *)calloc(1, sizeof(Node));
+        if (!newNode) return NULL_CALLOC;
+    }
 
     newNode->data  = strdup(newElement);
     if (!newNode->data) return NULL_CALLOC;
 
-    if (answer == 0) parentElement->right = newNode;
-    else             parentElement->left  = newNode;
+    if ( tree->firstNode ) {
+        if (answer == 0) parentElement->right = newNode;
+        else             parentElement->left  = newNode;
+    }
 
     DO_LOG_DUMP(line, file, tree);
 

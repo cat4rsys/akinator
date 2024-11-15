@@ -3,15 +3,15 @@
 
 #include <stdio.h>
 
-#define DO_CREATE_TREE(tree, pathToLog, rootElem) {                           \
-	createTree(tree, pathToLog, rootElem, __FILE__, __LINE__);                \
+#define DO_CREATE_TREE(tree, pathToLog) {                           \
+	createTree(tree, pathToLog, __FILE__, __LINE__);                \
 }
 
 #define DO_CREATE_NODE(tree, newElement, parent, answer) {                               \
 	createNode(tree, newElement, parent, answer, __FILE__, __LINE__);                    \
 }
 
-typedef const char * treeElem_t;
+typedef char * treeElem_t;
 
 typedef struct Node
 {
@@ -38,7 +38,7 @@ typedef struct Tree
     int numberOfOperation;
 } Tree;
 
-TreeError createTree(Tree * newTree, const char * pathToLog, const treeElem_t rootElem, const char * file, int line);
+TreeError createTree(Tree * newTree, const char * pathToLog, const char * file, int line);
 
 TreeError createNode(Tree * tree, const treeElem_t newElement, Node * parentElement, bool answer, const char * file, const int line);
 

@@ -5,7 +5,13 @@
 		{
 			"Famous dog"
 			{
-				"Muhtar"
+				"Cartoon character"
+				{
+					"Druzhok"
+				}
+				{
+					"Muhtar"
+				}
 			}
 			{
 				"Bobik"
