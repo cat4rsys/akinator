@@ -1,0 +1,21 @@
+{
+	"Animal"
+	{
+		"Dog"
+		{
+			"Famous dog"
+			{
+				"Muhtar"
+			}
+			{
+				"Bobik"
+			}
+		}
+		{
+			"Poltorashka"
+		}
+	}
+	{
+		"Human"
+	}
+}
