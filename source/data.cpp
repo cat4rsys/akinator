@@ -42,7 +42,6 @@ void _readDataToNode(FILE * inputFile, Node * node)
     while ( (c = fgetc(inputFile)) != '"');
     node->data = (char *)calloc(sizeOfBuf, sizeof(char));
 
-    printf("%p\n", node->data);
     fscanf(inputFile, "%[^\"]", node->data);
 }
 

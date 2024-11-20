@@ -7,24 +7,29 @@ OBJ := build/tree.o build/main.o build/log.o build/data.o
 BUILD := build
 
 INCLUDES := include
-OUTPUT := tree
+OUTPUT := akinator
 
 $(OUTPUT): $(OBJ)
-	mkdir -p log
-	mkdir -p $(BUILD)
+	@mkdir -p log
+	@mkdir -p $(BUILD)
 	$(CC) $(OBJ) -o $@
 
 build/tree.o:
+	@mkdir -p $(BUILD)
 	@$(CC) $(CFLAGS) -I $(INCLUDES) -c source/tree.cpp -o $@
 
 build/main.o:
+	@mkdir -p $(BUILD)
 	@$(CC) $(CFLAGS) -I $(INCLUDES) -c source/main.cpp -o $@
 
 build/log.o:
+	@mkdir -p $(BUILD)
 	@$(CC) $(CFLAGS) -I $(INCLUDES) -c source/log.cpp -o $@
 
 build/data.o:
+	@mkdir -p $(BUILD)
 	@$(CC) $(CFLAGS) -I $(INCLUDES) -c source/data.cpp -o $@
 
 clean:
 	rm build/*.o $(OUTPUT)
+	rm -R log
