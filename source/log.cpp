@@ -31,7 +31,7 @@ void printInfoAboutNode(Node * actualNode, FILE * dotFile)
 {
     if (!actualNode) return;
 
-    fprintf(dotFile, "ptr%p [shape=record,label=\"{ ptr:%p } | data:%s }\"]\n\t", actualNode, actualNode, actualNode->data);
+    fprintf(dotFile, "ptr%p [shape=record,label=\"{ ptr:%p } | data:%s | path:%s }\"]\n\t", actualNode, actualNode, actualNode->data, actualNode->pathVector);
 
     if ( actualNode->left ) {
         printInfoAboutNode(actualNode->left, dotFile);

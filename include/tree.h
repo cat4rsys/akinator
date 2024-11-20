@@ -18,6 +18,8 @@ typedef struct Node
     treeElem_t data;
     struct Node * left;
     struct Node * right;
+
+    char * pathVector;
 } Node;
 
 enum TreeError 

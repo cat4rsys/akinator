@@ -8,7 +8,7 @@
 
 static void _printNode(FILE * outputFile, Node * nodeForPrint, size_t depthOfTree);
 
-Node * _readFromFile(FILE * inputFile)
+Node * _readFromFile(FILE * inputFile, char * prevVector, char answer)
 {
     int c = 0;
     while ( (c = fgetc(inputFile)) != '{');
@@ -18,14 +18,19 @@ Node * _readFromFile(FILE * inputFile)
     int skipInput = 1;
     while (skipInput) {
         c = fgetc(inputFile);
-        if (c == '{' || c == '}') skipInput = 0;
+        if (c == '{' || c == '}') skipInput = 0; 
     }
 
-    if (c == '}') return node;
+    if (c == '}') {
+        node->pathVector = getVector(prevVector, answer);
+        return node;
+    } 
 
     ungetc(c, inputFile);
-    node->left  = _readFromFile(inputFile);
-    node->right = _readFromFile(inputFile);
+
+    node->pathVector = getVector(prevVector, answer);
+    node->left  = _readFromFile(inputFile, node->pathVector, 1);
+    node->right = _readFromFile(inputFile, node->pathVector, 0);
 
     return node;
 }
@@ -47,7 +52,7 @@ Tree * readFromFile(FILE * inputFile, const char * pathToLog)
 
     DO_CREATE_TREE(tree, pathToLog);
 
-    tree->firstNode = _readFromFile(inputFile);
+    tree->firstNode = _readFromFile(inputFile, NULL, 0);
 
     fclose(inputFile);
 
@@ -99,6 +104,9 @@ void defeatScript(Tree * tree, Node * node)
 
     char * dif = readDifference();
     node->data = dif;
+
+    node->left->pathVector  = getVector(node->pathVector, 1);
+    node->right->pathVector = getVector(node->pathVector, 0);
 
     printf("Okay, now I know more than before, thank you!\n");
 }
@@ -169,11 +177,13 @@ void startGame() {
                 break;
             }
             case 'd': {
-                runDefMode();
+                runDefMode(tree);
+                skipInput();
                 break;
             }
             case 'c': {
-                runCompareMode();
+                runCompareMode(tree);
+                skipInput();
                 break;
             }
             case 'l': {
@@ -234,14 +244,120 @@ void runGuessMode(Tree * tree)
     else             defeatScript(tree, lastNode);
 }
 
-void runDefMode()
+void runDefMode(Tree * tree)
 {
-    printf("Not available\n");
+    skipInput();
+    printf("Enter the name of subject, about which you want to know more!\n");
+    char buf[sizeOfBuf] = {};
+    fgets(buf, sizeOfBuf, stdin);
+
+    size_t lenghtOfSubject = strlen(buf);
+    buf[lenghtOfSubject - 1] = '\0';
+
+    char * path = findPath(buf, tree->firstNode);
+
+    if (path == NULL) {
+        printf("This subject does not exist! Or I just don`t know about it...\n");
+        return;
+    }
+
+    Node * actualNode = tree->firstNode;
+
+    printf("%s [%s]:", buf, path);
+
+    for (int i = 0; i < sizeOfBuf - 1; i++) {
+        if (path[i] == '\0') {
+            printf(".\n"); return;
+        }
+        if (path[i] == 'y') {
+            printf(" %s", actualNode->data);
+            actualNode = actualNode->left;
+        }
+        else if (path[i] == 'n') {
+            printf(" NOT %s", actualNode->data);
+            actualNode = actualNode->right;
+        }
+    }
+
+
 }
 
-void runCompareMode()
+void runCompareMode(Tree * tree)
 {
-    printf("Not available\n");
+    skipInput();
+
+    printf("Write the name of first subject:\n");
+    char firstBuf[sizeOfBuf] = {};
+    fgets(firstBuf, sizeOfBuf, stdin);
+
+    size_t firstLenghtOfSubject = strlen(firstBuf);
+    firstBuf[firstLenghtOfSubject - 1] = '\0';
+
+    printf("Write the name of second subject:\n");
+    char secondBuf[sizeOfBuf] = {};
+    fgets(secondBuf, sizeOfBuf, stdin);
+
+    size_t secondLenghtOfSubject = strlen(secondBuf);
+    secondBuf[secondLenghtOfSubject - 1] = '\0';
+
+    char * firstPath = findPath(firstBuf, tree->firstNode);
+    char * secondPath = findPath(secondBuf, tree->firstNode);
+
+    if (!secondPath && !firstPath) {
+        printf("I don`t know both of subjects!\n");
+        return;
+    }
+    if (!firstPath) {
+        printf("I don`t know first subject!\n");
+        return;
+    }
+    if (!secondPath) {
+        printf("I don`t know second subject!\n");
+        return;
+    }
+
+    if (firstPath == secondPath) {
+        printf("It is one object!\n");
+        return;
+    }
+
+    if (secondPath[0] != firstPath[0]) {
+        printf("Objects are not similar to each other!\n");
+    }
+
+    printf("%s is similar to %s, because they are both", firstBuf, secondBuf);
+
+    Node * actualNode = tree->firstNode;
+
+    size_t minLenght = minOfTwoLenght(firstPath, secondPath);
+
+    for (size_t i = 0; i < minLenght - 1; i++) {
+        printf(" %s,", actualNode->data);
+        actualNode = (firstPath[i] == 'y') ? actualNode->left : actualNode->right;
+    }
+
+    if (firstPath[minLenght] == 'y') printf(" but %s is %s", firstBuf,  actualNode->data);
+    else                             printf(" but %s is %s", secondBuf, actualNode->data);
+
+    return;
+}
+
+/*size_t compareNodes(char * firstVector, char * secondVector)
+{
+    size_t minLenght = minOfTwoLenght(firstVector, secondVector);
+
+    for (size_t i = 0; i < minLenght + 1; i++)
+        if (firstVector[i] != secondVector[i]) return i;
+
+    return minLenght;
+}*/
+
+size_t minOfTwoLenght(char * firstVector, char * secondVector)
+{
+    size_t first  = strlen(firstVector);
+    size_t second = strlen(secondVector);
+
+    return first*(first < second) + second * (first >= second);
 }
 
 void skipInput()
@@ -270,3 +386,40 @@ void showLog(Tree * tree)
     system("xdg-open log/req.png");
 }
 
+char * getVector(char * prevVector, char answer)
+{
+    if (prevVector)
+    {
+        size_t lenght = strlen(prevVector);
+
+        char * newVector = (char *)calloc(lenght + 1, sizeof(char));
+
+        strcpy(newVector, prevVector);
+        if (answer) newVector[lenght] = 'y';
+        else        newVector[lenght] = 'n';
+
+        return newVector;
+    }
+
+    char * newVector = (char *)calloc(1, sizeof(char));
+    newVector[0] = '\0';
+
+    return newVector;
+}
+
+char * findPath(const char * nameOfNode, Node * actualNode)
+{
+    if (strcmp(nameOfNode, actualNode->data) == 0 && actualNode->left == NULL && actualNode->right == NULL) {
+        return actualNode->pathVector;              
+    }
+
+    if (strstr(actualNode->pathVector, "y") == NULL && actualNode->left == NULL && actualNode->right == NULL) {
+        return NULL;
+    }
+
+    char * resultLeft = (actualNode->left) ? findPath(nameOfNode, actualNode->left): NULL;
+    char * resultRight = (actualNode->right) ? findPath(nameOfNode, actualNode->right):NULL;
+
+    if (resultLeft) return resultLeft;
+    return resultRight;
+}
